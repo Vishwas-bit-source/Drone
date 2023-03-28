@@ -1,0 +1,78 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+#define MAXN 1005
+
+int dx[] = {1, 1, 1, -1, -1, -1, 0, 0};
+int dy[] = {1, -1, 0, 1, -1, 0, 1, -1};
+int n, m;
+int grid[MAXN][MAXN];
+vector<pair<int, int>> path[MAXN];
+int vis[MAXN][MAXN];
+
+struct Drone {    // defining the structure of drone
+    int x, y, fx, fy, t, id;
+    bool operator<(const Drone& other) const {
+        return t < other.t;
+    }
+};
+
+vector<Drone> drones;
+
+void bfs(Drone drone) {
+    memset(vis, 0, sizeof(vis));
+    queue<pair<int, int>> q;
+    q.push({drone.x, drone.y});
+    vis[drone.x][drone.y] = 1;
+    while(!q.empty()) {
+        pair<int, int> curr = q.front();
+        q.pop();
+        for(int i = 0; i < 8; i++) {
+            int x = curr.first + dx[i];
+            int y = curr.second + dy[i];
+            if(x >= 0 && x < n && y >= 0 && y < m && !vis[x][y] && grid[x][y] == -1) {
+                vis[x][y] = 1;
+                q.push({x, y});
+                path[drone.id].push_back({x, y});
+                if(x == drone.fx && y == drone.fy) {
+                    return;
+                }
+            }
+        }
+    }
+}
+
+int main() {          // main parts of the para
+    memset(grid, -1, sizeof(grid));
+    cin >> n >> m;
+    int id = 0;
+    while(true) {
+        int x1, y1, x2, y2, t;
+        cin >> x1 >> y1 >> x2 >> y2 >> t;
+        if(cin.fail()) {
+            break;
+        }
+        Drone drone;
+        drone.x = x1, drone.y = y1, drone.fx = x2, drone.fy = y2, drone.t = t, drone.id = id++;
+        drones.push_back(drone);
+    }
+    sort(drones.begin(), drones.end());
+    for(int i = 0; i < drones.size(); i++) {
+        Drone drone = drones[i];
+        bfs(drone);
+        for(int j = 0; j < path[drone.id].size(); j++) {
+            pair<int, int> curr = path[drone.id][j];
+            grid[curr.first][curr.second] = drone.id;
+        }
+    }
+    for(int i = 0; i < drones.size(); i++) {
+        Drone drone = drones[i];
+        cout << "Drone " << drone.id + 1 << ": ";
+        for(int j = 0; j < path[drone.id].size(); j++) {
+            pair<int, int> curr = path[drone.id][j];
+            cout << "(" << curr.first << ", " << curr.second << ") ";
+        }
+        cout << endl;
+    }
+    return 0;
+}
